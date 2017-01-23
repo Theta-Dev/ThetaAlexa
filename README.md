@@ -9,6 +9,7 @@ This is my simple php-based Alexa server, that allows you to host your own custo
 ##To be added
 - Simple way to host mp3 files (for jingles and sound effects within responses)
 - Include a SQL database for storing user data permanently
+- add more demo intents to show the different features
 
 ##gaiterjones original project
 I built this project based on gaiterjones alexa server which can be found here: https://github.com/gaiterjones/amazon-alexa-php-hello-world-example
