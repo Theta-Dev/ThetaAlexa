@@ -9,11 +9,8 @@
 
 namespace ThetaAlexa\Application\Amazon;
 
-/* ALEXA REQUEST */
-
 class AlexaRequest
 {
-	
 	protected $__;
 	protected $__config;
 	
@@ -22,22 +19,15 @@ class AlexaRequest
 		try
 		{
 			$this->set('errorMessage','');
-			
 			$this->loadConfig();
-			
 			$this->getAlexaRequest();
-			
-			$this->validateAlexaRequest();			
-			
+			$this->validateAlexaRequest();
 			$this->renderAlexaResponse();
-		
 		}
 		
 		catch (\Exception $e)
-	    
 		{
 	    	$this->set('errorMessage', 'ERROR : '. $e->getMessage(). "\n". $this->getExceptionTraceAsString($e));
-			
 
 			$_logToFile=new \ThetaAlexa\Library\Log\LogToFile(
 				array(
@@ -59,7 +49,6 @@ class AlexaRequest
 				';
 			}
 			else $this->respond('Exception error, '. $e->getMessage());
-		
 			exit;
 	    }
 	}
@@ -85,7 +74,6 @@ class AlexaRequest
 			$this->set('alexarequest','false');
 			
 			// Get Amazon POST JSON data
-			//
 			$_jsonRequest    = file_get_contents('php://input');
 			$_data           = json_decode($_jsonRequest, true);
 			
@@ -96,17 +84,12 @@ class AlexaRequest
 				
 				if ($_debug)
 				{
-						
 					$_now = new \DateTime(null, new \DateTimeZone($this->__config->get('timezone')));
 					
-					//
 					// debug alexa request to log file
-					//
 					$_request = $_now->format(\DateTime::RFC1123) . "\n";
-			
-					//
+					
 					// Log Apache headers
-					//
 					$_headers = apache_request_headers();
 			
 					foreach ($_headers as $_header => $_value) {
@@ -134,17 +117,13 @@ class AlexaRequest
 		{
 			if (php_sapi_name() === 'cli') {exit;}
 			
-			//
 			// Validations based on API documentation at:
 			// https://developer.amazon.com/appsandservices/solutions/alexa/alexa-skills-kit/docs/developing-an-alexa-skill-as-a-web-service#Checking%20the%20Signature%20of%20the%20Request
-			//
 
 			// validate post request
-			//
 			if ($_SERVER['REQUEST_METHOD'] == 'GET') throw new \Exception('HTTP GET when POST was expected');
 
 			// validate public ip address space
-			//
 			if (filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
 				
 				$_alexaRequest=$this->get('alexarequest');
@@ -157,22 +136,18 @@ class AlexaRequest
 				if (!is_array($_alexaRequest)) { throw new \Exception('Invalid alexa request data.'); }
 				
 				// Determine if we need to download a new Signature Certificate Chain from Amazon
-				//
 				$_md5pem = md5($_SERVER['HTTP_SIGNATURECERTCHAINURL']);
 				$_md5pem = $_md5pem . '.pem';
 
 				// If we haven't received a certificate with this URL before, store it as a cached copy
-				//
 				if (!file_exists($this->get('amazonLogFolder').$_md5pem)) {
 					file_put_contents($this->get('amazonLogFolder').$_md5pem, file_get_contents($_SERVER['HTTP_SIGNATURECERTCHAINURL']));
 				}
 
 				// Validate proper format of Amazon provided certificate chain url
-				//
 				$this->validateKeychainUri($_SERVER['HTTP_SIGNATURECERTCHAINURL']);
 
 				// Validate certificate chain and signature
-				//
 				$_pem = file_get_contents($this->get('amazonLogFolder').$_md5pem);
 				$_ssl_check = openssl_verify($this->get('alexajsonrequest'), base64_decode($_SERVER['HTTP_SIGNATURE']), $_pem);
 				if ($_ssl_check != 1)
@@ -181,7 +156,6 @@ class AlexaRequest
 				}
 
 				// Parse certificate
-				//
 				$_parsedCertificate = openssl_x509_parse($_pem);
 				if (!$_parsedCertificate)
 				{
@@ -189,14 +163,12 @@ class AlexaRequest
 				}
 
 				// Check that the domain echo-api.amazon.com is present in the Subject Alternative Names (SANs) section of the signing certificate
-				//
 				if(strpos($_parsedCertificate['extensions']['subjectAltName'], $this->__config->get('amazonEchoServiceDomain')) === false)
 				{
 					throw new \Exception('subjectAltName Check Failed');
 				}
 
 				// Check that the signing certificate has not expired (examine both the Not Before and Not After dates)
-				//
 				$_validFrom = $_parsedCertificate['validFrom_time_t'];
 				$_validTo   = $_parsedCertificate['validTo_time_t'];
 				
@@ -207,7 +179,6 @@ class AlexaRequest
 				}
 
 				// Check the timestamp of the request and ensure it was within the past minute
-				//
 				$_alexaRequestTimestamp   = @$_alexaRequest['request']['timestamp'];
 				if ($_now->getTimestamp() - strtotime($_alexaRequestTimestamp) > 60)
 					throw new \Exception('timestamp validation failure.. Current time: ' . $_now->getTimestamp() . ' vs. Timestamp: ' . $_alexaRequestTimestamp);
@@ -221,12 +192,10 @@ class AlexaRequest
 			// 1. JSON RESPONSE
 			
 			// get alexa data
-			//
 			$_alexaRequest=$this->get('alexarequest');
 
 			// get intent
-			if($_alexaRequest['request']['type'] == 'LaunchRequest') $_alexaIntent = 'helloWorld';
-			else if($_alexaRequest['request']['type'] == 'SessionEndedRequest') exit;
+			if($_alexaRequest['request']['type'] != 'IntentRequest') $_alexaIntent = $_alexaRequest['request']['type'];
 			else if (isset($_alexaRequest['request']['intent'])) $_alexaIntent = $_alexaRequest['request']['intent']['name'];
 			else exit;
 			
@@ -256,40 +225,23 @@ class AlexaRequest
 			exit;
 		}
 		
-		//
 		// Validate keychainUri data from Amazon
-		//
-		private function validateKeychainUri($keychainUri){
-			
-		
+		private function validateKeychainUri($keychainUri)
+		{
 			$uriParts = parse_url($keychainUri);
 
-			if (strcasecmp($uriParts['host'], 's3.amazonaws.com') != 0)
-			{
-				throw new \Exception('The host for the Certificate provided in the header is invalid');
-			}
+			if (strcasecmp($uriParts['host'], 's3.amazonaws.com') != 0) throw new \Exception('The host for the Certificate provided in the header is invalid');
 			
-			if (strpos($uriParts['path'], '/echo.api/') !== 0)
-			{
-				throw new \Exception('The URL path for the Certificate provided in the header is invalid');
-			}
+			if (strpos($uriParts['path'], '/echo.api/') !== 0) throw new \Exception('The URL path for the Certificate provided in the header is invalid');
 			
-			if (strcasecmp($uriParts['scheme'], 'https') != 0)
-			{
-				throw new \Exception('The URL is using an unsupported scheme. Should be https');
-			}
+			if (strcasecmp($uriParts['scheme'], 'https') != 0) throw new \Exception('The URL is using an unsupported scheme. Should be https');
 
-			if (array_key_exists('port', $uriParts) && $uriParts['port'] != '443')
-			{
-				throw new \Exception('The URL is using an unsupported https port');
-			}
-
+			if (array_key_exists('port', $uriParts) && $uriParts['port'] != '443') throw new \Exception('The URL is using an unsupported https port');
 		}
 
 		// return json response to amazon
 		private function respond($alexaResponse)
 		{
-			
 			$card = $alexaResponse['card'];
 			
 			if (is_array($card))
@@ -312,25 +264,8 @@ class AlexaRequest
 			}
 			
 			
-			
 			// End session
 			$_shouldEndSession = $alexaResponse['askReply'] ? 'false' : 'true';
-			
-			// JSON
-			/*
-			$_json = '{
-						"version" : "1.0",
-						"response" :
-						{
-						    '.$speechJSON.$_cardJSON.'
-							"shouldEndSession": '.$_shouldEndSession.'
-						}
-					}
-			';
-			
-			// minify
-			$_json=\ThetaAlexa\Library\Minify\JSON::minify($_json);
-			;*/
 			
 			$result = array(
 				'version' => '1.0',
@@ -347,8 +282,6 @@ class AlexaRequest
 			
 			
 			$_json = json_encode($result);
-			//$_json = preg_replace('/\\\"/',"\"", $_json);
-			//$_json = substr($_json, 1, strlen($_json)-1);
 			
 			// header
 			$this->set('jsonresponse',$_json);
