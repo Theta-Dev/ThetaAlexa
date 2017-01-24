@@ -1,14 +1,11 @@
 <?php
 /*  created by ThetaDev (thdev.org)
-
  | forked from https://github.com/gaiterjones/amazon-alexa-php-hello-world-example by PAJ
  | The MIT License (MIT) Copyright (c) 2016 gaiterjones
  | blog.gaiterjones.com
  | paj@gaiterjones.com 
  */
-
 namespace ThetaAlexa\Application\Amazon;
-
 class AlexaRequest
 {
 	protected $__;
@@ -28,7 +25,6 @@ class AlexaRequest
 		catch (\Exception $e)
 		{
 	    	$this->set('errorMessage', 'ERROR : '. $e->getMessage(). "\n". $this->getExceptionTraceAsString($e));
-
 			$_logToFile=new \ThetaAlexa\Library\Log\LogToFile(
 				array(
 					'logfile' => $this->get('amazonLogFile'),
@@ -52,7 +48,6 @@ class AlexaRequest
 			exit;
 	    }
 	}
-
 	private function loadConfig()
 	{
 		$this->__config= new config();
@@ -119,10 +114,8 @@ class AlexaRequest
 			
 			// Validations based on API documentation at:
 			// https://developer.amazon.com/appsandservices/solutions/alexa/alexa-skills-kit/docs/developing-an-alexa-skill-as-a-web-service#Checking%20the%20Signature%20of%20the%20Request
-
 			// validate post request
 			if ($_SERVER['REQUEST_METHOD'] == 'GET') throw new \Exception('HTTP GET when POST was expected');
-
 			// validate public ip address space
 			if (filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
 				
@@ -138,15 +131,12 @@ class AlexaRequest
 				// Determine if we need to download a new Signature Certificate Chain from Amazon
 				$_md5pem = md5($_SERVER['HTTP_SIGNATURECERTCHAINURL']);
 				$_md5pem = $_md5pem . '.pem';
-
 				// If we haven't received a certificate with this URL before, store it as a cached copy
 				if (!file_exists($this->get('amazonLogFolder').$_md5pem)) {
 					file_put_contents($this->get('amazonLogFolder').$_md5pem, file_get_contents($_SERVER['HTTP_SIGNATURECERTCHAINURL']));
 				}
-
 				// Validate proper format of Amazon provided certificate chain url
 				$this->validateKeychainUri($_SERVER['HTTP_SIGNATURECERTCHAINURL']);
-
 				// Validate certificate chain and signature
 				$_pem = file_get_contents($this->get('amazonLogFolder').$_md5pem);
 				$_ssl_check = openssl_verify($this->get('alexajsonrequest'), base64_decode($_SERVER['HTTP_SIGNATURE']), $_pem);
@@ -154,20 +144,17 @@ class AlexaRequest
 				{
 					throw new \Exception(openssl_error_string());
 				}
-
 				// Parse certificate
 				$_parsedCertificate = openssl_x509_parse($_pem);
 				if (!$_parsedCertificate)
 				{
 					throw new \Exception('x509 certificate parse failed');
 				}
-
 				// Check that the domain echo-api.amazon.com is present in the Subject Alternative Names (SANs) section of the signing certificate
 				if(strpos($_parsedCertificate['extensions']['subjectAltName'], $this->__config->get('amazonEchoServiceDomain')) === false)
 				{
 					throw new \Exception('subjectAltName Check Failed');
 				}
-
 				// Check that the signing certificate has not expired (examine both the Not Before and Not After dates)
 				$_validFrom = $_parsedCertificate['validFrom_time_t'];
 				$_validTo   = $_parsedCertificate['validTo_time_t'];
@@ -177,12 +164,10 @@ class AlexaRequest
 				if (!($_validFrom <= $_time && $_time <= $_validTo)) {
 					throw new \Exception('certificate expiration check failed');
 				}
-
 				// Check the timestamp of the request and ensure it was within the past minute
 				$_alexaRequestTimestamp   = @$_alexaRequest['request']['timestamp'];
 				if ($_now->getTimestamp() - strtotime($_alexaRequestTimestamp) > 60)
 					throw new \Exception('timestamp validation failure.. Current time: ' . $_now->getTimestamp() . ' vs. Timestamp: ' . $_alexaRequestTimestamp);
-
 			} // request does not originate from public ip space
 		}
 	
@@ -193,7 +178,6 @@ class AlexaRequest
 			
 			// get alexa data
 			$_alexaRequest=$this->get('alexarequest');
-
 			// get intent
 			if($_alexaRequest['request']['type'] != 'IntentRequest') $_alexaIntent = $_alexaRequest['request']['type'];
 			else if (isset($_alexaRequest['request']['intent'])) $_alexaIntent = $_alexaRequest['request']['intent']['name'];
@@ -229,22 +213,21 @@ class AlexaRequest
 		private function validateKeychainUri($keychainUri)
 		{
 			$uriParts = parse_url($keychainUri);
-
 			if (strcasecmp($uriParts['host'], 's3.amazonaws.com') != 0) throw new \Exception('The host for the Certificate provided in the header is invalid');
 			
 			if (strpos($uriParts['path'], '/echo.api/') !== 0) throw new \Exception('The URL path for the Certificate provided in the header is invalid');
 			
 			if (strcasecmp($uriParts['scheme'], 'https') != 0) throw new \Exception('The URL is using an unsupported scheme. Should be https');
-
 			if (array_key_exists('port', $uriParts) && $uriParts['port'] != '443') throw new \Exception('The URL is using an unsupported https port');
 		}
-
 		// return json response to amazon
 		private function respond($alexaResponse)
 		{
+			if(!is_array($alexaResponse)) $alexaResponse = array('response' => $alexaResponse, 'askReply' => false);
+			
 			$card = $alexaResponse['card'];
 			
-			if (is_array($card))
+			if(is_array($card))
 			{
 				if (!$card['type']) $card['type']='Standard';
 				if (!$card['text']) $card['text']=$alexaResponse['response'];
@@ -253,7 +236,7 @@ class AlexaRequest
 				if ($card['imageLocal']) $card['image'] = array('smallImageUrl' => $this->get('applicationURL'). 'alexaCardImage.php?size=small&image='. $card['imageLocal'],
 					'largeImageUrl' => $this->get('applicationURL'). 'alexaCardImage.php?size=small&image='. $card['imageLocal']);
 			}
-			else if ($card == true)
+			else if($card == true)
 			{
 				// default card
 				$card = array(
@@ -270,8 +253,7 @@ class AlexaRequest
 			$result = array(
 				'version' => '1.0',
 				'response' => array(
-					'shouldEndSession' => !$alexaResponse['askReply'],
-					'test' => $alexaResponse['reprompt']
+					'shouldEndSession' => !$alexaResponse['askReply']
 				)
 			);
 			
@@ -285,7 +267,7 @@ class AlexaRequest
 			
 			// header
 			$this->set('jsonresponse',$_json);
-			header('Content-Type: application/json;charset=UTF-8');			
+			header('Content-Type: application/json;charset=UTF-8');	
 			header('Content-Length: ' . strlen($_json));
 			echo $_json;
 		}
