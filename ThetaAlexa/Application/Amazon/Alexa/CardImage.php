@@ -7,13 +7,13 @@
  | paj@gaiterjones.com 
  */
 
-namespace PAJ\Application\Amazon\Alexa;
+namespace ThetaAlexa\Application\Amazon\Alexa;
 
 /**
  * CardImage
  * @what return image with correct headers for alexa card response
  */
-class CardImage extends \PAJ\Application\Amazon\Controller {
+class CardImage extends \ThetaAlexa\Application\Amazon\Controller {
 	
 	public function __construct() {
 		
