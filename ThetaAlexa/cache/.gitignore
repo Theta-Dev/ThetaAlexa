@@ -1,3 +1,6 @@
+# This directory is for holding the alexa certificates to be processed
+# You will also find the logfiles here
+#
 # Ignore everything in this directory
 *
 # Except this file
