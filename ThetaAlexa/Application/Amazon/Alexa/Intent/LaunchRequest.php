@@ -12,8 +12,8 @@ namespace ThetaAlexa\Application\Amazon\Alexa\Intent;
 
 class LaunchRequest extends \ThetaAlexa\Application\Amazon\Controller {
 	
-	public function __construct($_variables) {
-	
+	public function __construct($_variables)
+	{
 		// load parent
 		parent::__construct($_variables);
 	}
