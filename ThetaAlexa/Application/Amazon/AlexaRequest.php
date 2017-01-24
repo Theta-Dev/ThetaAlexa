@@ -199,7 +199,7 @@ class AlexaRequest
 		  "alexarequest"		 	=> 		$_alexaRequest,
 		  "intentName"				=>		$_alexaIntent,
 		  "amazonLogFile"	 		=> 		$this->get('amazonLogFile'),
-		  "version"	 				=> 		$this->get('version'),
+		  "version"	 			=> 		$this->get('version'),
 		  "versionnumber"			=> 		$this->get('versionNumber'),			  
 		  "applicationname"		 	=> 		$this->get('applicationName'),
 		  "errorMessage" 		 	=>		$this->__['errorMessage']
