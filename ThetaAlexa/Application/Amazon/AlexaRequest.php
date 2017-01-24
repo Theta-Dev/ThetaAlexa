@@ -182,10 +182,14 @@ class AlexaRequest
 		$_alexaRequest=$this->get('alexarequest');
 		
 		// get intent
-		if($this->__config->get('singleIntent') != '') $_alexaIntent = $this->__config->get('singleIntent'); 
+		if($this->__config->get('singleIntent') != '')
+		{
+			if($_alexaRequest['request']['type'] != 'SessionEndedRequest') $_alexaIntent = $this->__config->get('singleIntent');
+			else $this->respond('');
+		}
 		else if($_alexaRequest['request']['type'] != 'IntentRequest') $_alexaIntent = $_alexaRequest['request']['type'];
 		else if (isset($_alexaRequest['request']['intent'])) $_alexaIntent = $_alexaRequest['request']['intent']['name'];
-		else exit;
+		else $this->respond('');
 		
 		$_alexaRenderClass=__NAMESPACE__. '\\Alexa\\Intent\\'.$_alexaIntent;
 		
