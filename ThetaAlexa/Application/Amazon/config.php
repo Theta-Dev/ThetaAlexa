@@ -10,9 +10,12 @@ namespace ThetaAlexa\Application\Amazon;
 class config
 {
 	// AMAZON ALEXA
+	const amazonSkillId = 'amzn1.ask.skill.XXX';
 	const amazonEchoServiceDomain = 'echo-api.amazon.com';
 	const amazonCacheFolder='/ThetaAlexa/cache/';
 	const amazonCardImageFolder='/ThetaAlexa/www/Amazon/Alexa/images/card/';
+	
+	const singleIntent = '';
 	
 	// timezone
 	const timezone='Europe/Berlin';		
@@ -44,8 +47,8 @@ class config
 	
 	// my constants here
 	const applicationName = 'ThetaAlexa';
-	const applicationURL = '';
-	const applicationDomain = '';
+	const applicationURL = 'https://www.yourserver.com/xxx/';
+	const applicationDomain = 'yourserver.com';
 	const siteTitle='ThetaAlexa';
 
 	public $_serverURL;
