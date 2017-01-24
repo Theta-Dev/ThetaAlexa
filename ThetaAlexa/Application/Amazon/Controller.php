@@ -136,17 +136,12 @@ class Controller {
 		$this->__[$key] = $value;
 	}
 	
-	protected function getResponse($obj, $alexaRequest, $response='', $reprompt='', $card=false, $askReply=false, $sessionAttr=null)
+	protected function getResponse($response='', $reprompt='', $card=false, $askReply=false, $sessionAttr=null)
 	{
-		$_locale = $alexaRequest['request']['locale'];
-		$_now = new \DateTime(null, new \DateTimeZone('Europe/Berlin'));
-		
 		return array(
 			'response' => $response,
 			'reprompt' => $reprompt,
 			'card' => $card,
-			'locale' => $_locale,
-			'timestamp' => $_now->format('Y-m-d\TH:i:sP'),
 			'askReply' => $askReply,
 			'sessionAttr' => $sessionAttr
 		);
