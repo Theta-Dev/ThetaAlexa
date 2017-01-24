@@ -22,7 +22,7 @@ class LaunchRequest extends \ThetaAlexa\Application\Amazon\Controller {
 	{
 		$_alexaRequest=$this->get('alexarequest');
 		
-		return parent::getResponse($this, $_alexaRequest, 'Hallo Welt', '', true);
+		return parent::getResponse('Hallo Welt', '', true);
 	}
 }
 ?>
