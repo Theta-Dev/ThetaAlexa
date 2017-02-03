@@ -1,8 +1,6 @@
 <?php
 /*
-
 	Edit configuration settings here
-
 */
 
 namespace ThetaAlexa\Application\Amazon;
@@ -14,6 +12,7 @@ class config
 	const amazonEchoServiceDomain = 'echo-api.amazon.com';
 	const amazonCacheFolder='/ThetaAlexa/cache/';
 	const amazonCardImageFolder='/ThetaAlexa/www/Amazon/Alexa/images/card/';
+	const amazonSoundFolder='/ThetaAlexa/www/Amazon/Alexa/sounds/';
 	
 	const singleIntent = '';
 	
@@ -29,12 +28,10 @@ class config
 	const cacheHTML=false;	
 	
 	// configure session variables
-	//
 	const sessionEnabled = true;
 	const sessionLifetime = 86400;
 	
 	// configure logging module
-	//
 	const loggingEnabled = false; // logs to logging module
 	// path to folder for file logging
 	const logFilePath = '/home/www/log/';
