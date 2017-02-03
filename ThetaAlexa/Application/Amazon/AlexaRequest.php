@@ -333,7 +333,25 @@ class AlexaRequest
 	{
 		if($speech == '') return array();
 		
-		if(strpos($speech, '<speak>') !== false) $array = array('type' => 'SSML', 'ssml' => $speech);
+		if(strpos($speech, '<speak>') !== false)
+		{
+			$str = $speech;
+		
+			while(true)
+			{
+				$pos = strpos($str, '[[SOUND:');
+				if($pos === false) break;
+				$m = substr($str, $pos+8);
+				$out = $out.substr($str, 0, $pos);
+				$f = strpos($m, ']]');
+				$str = substr($m, $f+2);
+				$m = substr($m, 0, $f);
+				
+				$out = $out.'"'.$this->get('applicationURL').'alexaSound.php?sound='.$m.'"';
+			}
+			
+			$array = array('type' => 'SSML', 'ssml' => $out.$str);
+		}
 		else $array = array('type' => 'PlainText', 'text' => $speech);
 		
 		return $array;
