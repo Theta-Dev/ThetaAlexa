@@ -146,4 +146,11 @@ class Controller {
 			'sessionAttr' => $sessionAttr
 		);
 	}
+	
+	protected function getDatabase()
+	{
+		$con =  mysqli_connect($this->__config->get('dbHost'),$this->__config->get('dbUser'),$this->__config->get('dbPass'),$this->__config->get('dbName'));
+		mysqli_set_charset($con, "utf8");
+		return $con;
+	}
 }
