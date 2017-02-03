@@ -5,10 +5,10 @@ This is my simple php-based Alexa server, that allows you to host your own custo
 - Give speech output, either in plaintext or in SSML (Speech Synthesis Markup Language)
 - Show cards in the alexa app (also with pictures)
 - Handing over session attributes to store data within one conversation
-
-##To be added
 - Simple way to host mp3 files (for jingles and sound effects within responses)
 - Include a SQL database for storing user data permanently
+
+##To be added
 - add more demo intents to show the different features
 
 ##gaiterjones original project
