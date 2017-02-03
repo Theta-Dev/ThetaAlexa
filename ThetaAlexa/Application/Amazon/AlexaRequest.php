@@ -43,7 +43,7 @@ class AlexaRequest
 					</pre>
 				';
 			}
-			else $this->respond('Exception error, '. $e->getMessage());
+			else http_response_code(400);
 			exit;
 	    }
 	}
@@ -126,9 +126,12 @@ class AlexaRequest
 			$_requestTimestamp   = @$_alexaRequest['request']['timestamp'];				
 
 			if (!is_array($_alexaRequest)) { throw new \Exception('Invalid alexa request data.'); }
-
+			
 			// validate application id
 			if ($_applicationId != $this->__config->get('amazonSkillId')) throw new \Exception('Invalid Application id: ' . $_applicationId);
+			
+			// Validate proper format of Amazon provided certificate chain url
+			$this->validateKeychainUri($_SERVER['HTTP_SIGNATURECERTCHAINURL']);
 
 			// Determine if we need to download a new Signature Certificate Chain from Amazon
 			$_md5pem = md5($_SERVER['HTTP_SIGNATURECERTCHAINURL']);
@@ -137,8 +140,6 @@ class AlexaRequest
 			if (!file_exists($this->get('amazonLogFolder').$_md5pem)) {
 				file_put_contents($this->get('amazonLogFolder').$_md5pem, file_get_contents($_SERVER['HTTP_SIGNATURECERTCHAINURL']));
 			}
-			// Validate proper format of Amazon provided certificate chain url
-			$this->validateKeychainUri($_SERVER['HTTP_SIGNATURECERTCHAINURL']);
 			// Validate certificate chain and signature
 			$_pem = file_get_contents($this->get('amazonLogFolder').$_md5pem);
 			$_ssl_check = openssl_verify($this->get('alexajsonrequest'), base64_decode($_SERVER['HTTP_SIGNATURE']), $_pem);
@@ -170,7 +171,8 @@ class AlexaRequest
 			$_alexaRequestTimestamp   = @$_alexaRequest['request']['timestamp'];
 			if ($_now->getTimestamp() - strtotime($_alexaRequestTimestamp) > 60)
 				throw new \Exception('timestamp validation failure.. Current time: ' . $_now->getTimestamp() . ' vs. Timestamp: ' . $_alexaRequestTimestamp);
-		} // request does not originate from public ip space
+		}
+		else throw new \Exception('request does not originate from public ip space');
 	}
 	
 	private function renderAlexaResponse()
