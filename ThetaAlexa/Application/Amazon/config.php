@@ -25,7 +25,13 @@ class config
 	const memcacheServerPort='11211';
 	const memcacheTTL='604800';
 	const cacheKey='AMAZON';
-	const cacheHTML=false;	
+	const cacheHTML=false;
+	
+	//configure MySQL database access
+	const dbHost = "";
+	const dbUser = "";
+	const dbPass = "";
+	const dbName = "";
 	
 	// configure session variables
 	const sessionEnabled = true;
